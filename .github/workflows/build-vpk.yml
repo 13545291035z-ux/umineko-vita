@@ -14,13 +14,19 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Build Native FFmpeg
-        run: bash extras/scripts/build_native_ffmpeg.sh
-
       - name: Build VPK
         run: |
+          FFMPEG_SCRIPT=$(find . -maxdepth 4 -name "*ffmpeg*.sh" | head -n 1)
+          EXTRA_ARGS=""
+          if [ -n "$FFMPEG_SCRIPT" ]; then
+            echo "Found FFmpeg script: $FFMPEG_SCRIPT"
+            bash "$FFMPEG_SCRIPT"
+          elif [ -f "$VITASDK/arm-vita-eabi/lib/libavcodec.a" ]; then
+            echo "Using preinstalled VitaSDK FFmpeg"
+            EXTRA_ARGS="-DONS_FFMPEG_ROOT=$VITASDK/arm-vita-eabi"
+          fi
           mkdir -p build && cd build
-          cmake .. -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" -DCMAKE_BUILD_TYPE=Release -DONS_VITA_EXPORT_SHADERS=ON
+          cmake .. -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" -DCMAKE_BUILD_TYPE=Release -DONS_VITA_EXPORT_SHADERS=ON $EXTRA_ARGS
           make -j$(nproc)
 
       - name: Upload VPK
