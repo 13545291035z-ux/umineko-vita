@@ -81,6 +81,7 @@ jobs:
           sed -i 's/FF_PROFILE_H264_/AV_PROFILE_H264_/g' upstream/onscripter-ru/Engine/Media/Controller.cpp
           sed -i 's/avcodec_close(context);/(void)context;/g' upstream/onscripter-ru/Engine/Media/Controller.cpp
           sed -i 's/codecContext->ticks_per_frame/1/g' upstream/onscripter-ru/Engine/Media/VideoDecoder.cpp
+          sed -i 's/VGL_MEM_SLOW/VGL_MEM_ALL/g' platform/vita/memory.cpp
 
       - name: Build VPK
         run: |
