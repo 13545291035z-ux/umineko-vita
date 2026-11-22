@@ -16,6 +16,10 @@ jobs:
 
       - name: Prepare missing build helpers
         run: |
+          if [ ! -f "upstream/onscripter-ru/Tools/embed/embed.c" ]; then
+            mkdir -p upstream/onscripter-ru/Tools/embed
+            curl -fsSL https://raw.githubusercontent.com/umineko-project/onscripter-ru/master/Tools/embed/embed.c -o upstream/onscripter-ru/Tools/embed/embed.c
+          fi
           if [ ! -f "native-bench/vendor/libpng/png.c" ]; then
             mkdir -p native-bench/vendor/libpng
             curl -L https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.43.tar.gz | tar -xz --strip-components=1 -C native-bench/vendor/libpng
@@ -49,6 +53,10 @@ jobs:
           shutil.copyfile(a.src, a.dst)
           EOF
           fi
+          mkdir -p native-bench/licenses
+          for f in FreeType.txt libogg.txt bzip2.txt; do
+            [ -f "native-bench/licenses/$f" ] || touch "native-bench/licenses/$f"
+          done
 
       - name: Build VPK
         run: |
