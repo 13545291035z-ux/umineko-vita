@@ -16,13 +16,9 @@ jobs:
 
       - name: Build VPK
         run: |
-          if [ -f "CMakeLists.txt" ]; then
-            mkdir -p build && cd build
-            cmake .. -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" -DCMAKE_BUILD_TYPE=Release
-            make -j$(nproc)
-          else
-            make -j$(nproc)
-          fi
+          mkdir -p build && cd build
+          cmake .. -DCMAKE_TOOLCHAIN_FILE="$VITASDK/share/vita.toolchain.cmake" -DCMAKE_BUILD_TYPE=Release -DONS_VITA_EXPORT_SHADERS=ON
+          make -j$(nproc)
 
       - name: Upload VPK
         uses: actions/upload-artifact@v4
