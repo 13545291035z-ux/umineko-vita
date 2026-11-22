@@ -23,7 +23,7 @@ jobs:
           if [ ! -f "tools/embed_resources.py" ]; then
             mkdir -p tools
             cat << 'EOF' > tools/embed_resources.py
-          import argparse, glob, os, subprocess, sys
+          import argparse, glob, os, subprocess
           p = argparse.ArgumentParser()
           p.add_argument("--tool", required=True)
           p.add_argument("--source", required=True)
@@ -34,14 +34,11 @@ jobs:
           for pat in ("Resources/Shaders/*.frag", "Resources/Shaders/*.vert", "Resources/Images/*.png"):
               files.extend(glob.glob(os.path.join(a.source, pat)))
           files = sorted(os.path.relpath(f, a.source) for f in files if not os.path.basename(f).startswith("._"))
-          tool = os.path.abspath(a.tool)
-          out = os.path.abspath(a.output)
-          res = subprocess.run([tool, out, *files], cwd=a.source)
-          if res.returncode != 0 or not os.path.exists(out):
-              res = subprocess.run([tool, "-o", out, *files], cwd=a.source)
-          if res.returncode != 0 or not os.path.exists(out):
-              subprocess.run([tool, "--help"], cwd=a.source)
-              sys.exit(1)
+          args = [os.path.abspath(a.tool)]
+          for f in files:
+              args.extend([f, os.path.basename(f)])
+          args.append(os.path.abspath(a.output))
+          subprocess.check_call(args, cwd=a.source)
           EOF
           fi
           if [ ! -f "native-bench/vendor/libpng/png.c" ]; then
