@@ -20,6 +20,30 @@ jobs:
             mkdir -p upstream/onscripter-ru/Tools/embed
             curl -fsSL https://raw.githubusercontent.com/umineko-project/onscripter-ru/master/Tools/embed/embed.c -o upstream/onscripter-ru/Tools/embed/embed.c
           fi
+          if [ ! -f "tools/embed_resources.py" ]; then
+            mkdir -p tools
+            cat << 'EOF' > tools/embed_resources.py
+          import argparse, glob, os, subprocess, sys
+          p = argparse.ArgumentParser()
+          p.add_argument("--tool", required=True)
+          p.add_argument("--source", required=True)
+          p.add_argument("--output", required=True)
+          a = p.parse_args()
+          os.makedirs(os.path.dirname(os.path.abspath(a.output)), exist_ok=True)
+          files = []
+          for pat in ("Resources/Shaders/*.frag", "Resources/Shaders/*.vert", "Resources/Images/*.png"):
+              files.extend(glob.glob(os.path.join(a.source, pat)))
+          files = sorted(os.path.relpath(f, a.source) for f in files if not os.path.basename(f).startswith("._"))
+          tool = os.path.abspath(a.tool)
+          out = os.path.abspath(a.output)
+          res = subprocess.run([tool, out, *files], cwd=a.source)
+          if res.returncode != 0 or not os.path.exists(out):
+              res = subprocess.run([tool, "-o", out, *files], cwd=a.source)
+          if res.returncode != 0 or not os.path.exists(out):
+              subprocess.run([tool, "--help"], cwd=a.source)
+              sys.exit(1)
+          EOF
+          fi
           if [ ! -f "native-bench/vendor/libpng/png.c" ]; then
             mkdir -p native-bench/vendor/libpng
             curl -L https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.43.tar.gz | tar -xz --strip-components=1 -C native-bench/vendor/libpng
