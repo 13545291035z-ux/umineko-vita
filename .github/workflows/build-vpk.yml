@@ -78,6 +78,9 @@ jobs:
           for f in FreeType.txt libogg.txt bzip2.txt; do
             [ -f "native-bench/licenses/$f" ] || touch "native-bench/licenses/$f"
           done
+          sed -i 's/FF_PROFILE_H264_/AV_PROFILE_H264_/g' upstream/onscripter-ru/Engine/Media/Controller.cpp
+          sed -i 's/avcodec_close(context);/(void)context;/g' upstream/onscripter-ru/Engine/Media/Controller.cpp
+          sed -i 's/codecContext->ticks_per_frame/1/g' upstream/onscripter-ru/Engine/Media/VideoDecoder.cpp
 
       - name: Build VPK
         run: |
