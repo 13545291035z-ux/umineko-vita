@@ -14,13 +14,40 @@ jobs:
         with:
           submodules: recursive
 
-      - name: Prepare libpng source
+      - name: Prepare missing build helpers
         run: |
           if [ ! -f "native-bench/vendor/libpng/png.c" ]; then
             mkdir -p native-bench/vendor/libpng
             curl -L https://github.com/pnggroup/libpng/archive/refs/tags/v1.6.43.tar.gz | tar -xz --strip-components=1 -C native-bench/vendor/libpng
             cp native-bench/vendor/libpng/scripts/pnglibconf.h.prebuilt native-bench/vendor/libpng/pnglibconf.h
             rm -f native-bench/vendor/libpng/pngtest.c
+          fi
+          if [ ! -f "platform/vita/gpu_translator_archive.py" ]; then
+            cat << 'EOF' > platform/vita/gpu_translator_archive.py
+          import argparse, shutil, subprocess
+          p = argparse.ArgumentParser()
+          p.add_argument("--ar", required=True)
+          p.add_argument("--objcopy", required=True)
+          p.add_argument("src")
+          p.add_argument("dst")
+          a = p.parse_args()
+          shutil.copyfile(a.src, a.dst)
+          members = subprocess.check_output([a.ar, "t", a.dst], text=True).splitlines()
+          for m in members:
+              if "global" in m.lower():
+                  subprocess.check_call([a.ar, "d", a.dst, m])
+          EOF
+          fi
+          if [ ! -f "platform/vita/mixer_archive.py" ]; then
+            cat << 'EOF' > platform/vita/mixer_archive.py
+          import argparse, shutil
+          p = argparse.ArgumentParser()
+          p.add_argument("--ar", required=True)
+          p.add_argument("src")
+          p.add_argument("dst")
+          a = p.parse_args()
+          shutil.copyfile(a.src, a.dst)
+          EOF
           fi
 
       - name: Build VPK
